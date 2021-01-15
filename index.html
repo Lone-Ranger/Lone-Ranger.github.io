@@ -375,7 +375,7 @@ class test:
 serialized_data = yaml.dump(test().ok()) # serializing data
 print(serialized_data) # printing yaml serialized class object
 </code></pre>
-<p>Output;
+<p>Output:
 <code>!!python/object/apply:builtins.range [1, 10, 1]</code>
 <code>dump()</code> actually serialized the output returned to it in the form of an object of <code>__builtins__</code>.<code>range()</code> , to represent this object type output ,it uses <code>!!python/object/apply:</code>, and also show values passed to <code>range()</code> function. Kindly note that it is not showing the expected returned value <code>(i.e [1,2,3,4,5,6,7,8,9])</code> which class method returned this range object, firstly <code>range()</code> always returns an object of an iterator class by initializing it with given values,</p>
 <p><a href="./files/6.png" target="_blank" rel="noopener noreferrer"><img src="./files/6.png" alt="" style="max-width:100%;"></a></p>
@@ -544,7 +544,7 @@ data = b'!!python/object/apply:builtins.range [1, 10, 1]'
 deserialized_data = yaml.load(data) # deserializing data
 print(deserialized_data)
 </code></pre>
-<p>Output;</p>
+<p>Output</p>
 <pre><code>range(1, 10)
 C:/Users/j0lt/paper_files/main.py:4: YAMLLoadWarning: calling yaml.load()
 without Loader=... is deprecated, as the default Loader is unsafe. Please
@@ -661,7 +661,7 @@ print(isinstance(cls, type))
 <p>We can bypass it by deserializing objects of classes only and not class methods or any other type of attributes of module. In short, we needed “sleep” to be a class instead of a function to make it
 executed.</p>
 <p>Trying same code in <code>Pyyaml</code> version &lt; 5.1, <code>load(data, Loader=Loader)</code>, <code>load(data, Loader=FullLoader)</code> or <code>load(data, Loader=UnsafeLoader)</code>, we will get output with delay of 10 seconds which completely show that “time.sleep(10)” will get executed. The “None” is the return value of “time.sleep(10)” after execution.</p>
-<p>Output;
+<p>Output:
 <code>None</code></p>
 <p>For the PyYAML version &lt; 5.1, the constructor.py don’t have these patches and works fine.</p>
 <p>In <code>ruamel.yaml</code>, deserialization of class objects can take place like this,</p>
@@ -670,7 +670,7 @@ data = b'!!python/object/apply:time.sleep [10]'
 deserialized_data = yaml.load(data) # serializing data
 print(deserialized_data)
 </code></pre>
-<p>Output;</p>
+<p>Output:</p>
 <pre><code>C:/Users/j0lt/paper_files/main.py:4: UnsafeLoaderWarning:
 The default 'Loader' for 'load(stream)' without further arguments can be
 unsafe.
